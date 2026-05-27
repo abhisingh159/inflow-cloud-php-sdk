@@ -1,0 +1,47 @@
+{
+    "name": "abhisingh159/inflow-cloud-php-sdk",
+    "description": "Standalone PHP SDK for the inFlow Cloud API (products, customers, sales orders, inventory, vendors).",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "inflow",
+        "inflow-cloud",
+        "inflow-inventory",
+        "inventory",
+        "sdk",
+        "api",
+        "api-client",
+        "ecommerce"
+    ],
+    "homepage": "https://github.com/abhisingh159/inflow-cloud-php-sdk",
+    "support": {
+        "issues": "https://github.com/abhisingh159/inflow-cloud-php-sdk/issues",
+        "source": "https://github.com/abhisingh159/inflow-cloud-php-sdk"
+    },
+    "authors": [
+        {
+            "name": "abhisingh159",
+            "homepage": "https://github.com/abhisingh159",
+            "role": "Maintainer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Abhimanev\\Inflow\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Abhimanev\\Inflow\\Tests\\": "tests/"
+        }
+    },
+    "require": {
+        "php": ">=8.1",
+        "guzzlehttp/guzzle": "^7.8"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true
+    }
+}
