@@ -19,6 +19,13 @@ composer require abhimanev/inflow-cloud-php-sdk
 
 The SDK reads credentials from a `Config` object. Do **not** hardcode credentials in your application — load them from environment variables or your framework's config store.
 
+You'll need:
+- an active inFlow account with the API access add-on (or a trial)
+- administrator rights
+- an **API key** and your **companyId** — generate both at [app.inflowinventory.com/options/integrations](https://app.inflowinventory.com/options/integrations)
+
+The SDK handles the URL structure (`/{companyId}/...`), auth header (`Authorization: Bearer {key}`), and the versioned `Accept` header for you. You only ever pass the resource path (e.g. `/products`).
+
 ```php
 use Abhimanev\Inflow\Config;
 use Abhimanev\Inflow\Inflow;
@@ -145,10 +152,10 @@ $inflow = new Inflow($config, new Client($config, $http));
 | `products()`     | `ProductResource`    | `/products`, `/products/{id}` |
 | `customers()`    | `CustomerResource`   | `/customers`, `/customers/{id}` |
 | `salesOrders()`  | `SalesOrderResource` | `/sales-orders`, `/sales-orders/{id}` |
-| `inventory()`    | `InventoryResource`  | `/inventory`, `/inventory/{id}`, `/inventory/stock-levels` |
+| `inventory()`    | `InventoryResource`  | `/products/summary`, `/products/{id}/summary` (read-only — see note below) |
 | `vendors()`      | `VendorResource`     | `/vendors`, `/vendors/{id}` |
 
-Each resource exposes `list()`, `find()`, `create()`, `update()`, `delete()`.
+Each resource exposes `list()`, `find()`, `create()`, `update()`, `delete()` — **except `inventory()`**, which is read-only. inFlow has no direct "set stock" endpoint; stock changes go through stock-adjustments / stock-counts / stock-transfers (planned for a future SDK release). Calling `inventory()->create/update/delete()` throws `BadMethodCallException` with an actionable message.
 
 ## License
 
