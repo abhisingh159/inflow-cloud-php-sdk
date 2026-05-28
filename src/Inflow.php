@@ -8,6 +8,7 @@ use Abhimanev\Inflow\Resources\CustomerResource;
 use Abhimanev\Inflow\Resources\InventoryResource;
 use Abhimanev\Inflow\Resources\ProductResource;
 use Abhimanev\Inflow\Resources\SalesOrderResource;
+use Abhimanev\Inflow\Resources\StockAdjustmentResource;
 use Abhimanev\Inflow\Resources\VendorResource;
 
 class Inflow
@@ -19,6 +20,7 @@ class Inflow
     private ?CustomerResource $customers = null;
     private ?SalesOrderResource $salesOrders = null;
     private ?InventoryResource $inventory = null;
+    private ?StockAdjustmentResource $stockAdjustments = null;
     private ?VendorResource $vendors = null;
 
     public function __construct(Config $config, ?Client $client = null)
@@ -55,6 +57,11 @@ class Inflow
     public function inventory(): InventoryResource
     {
         return $this->inventory ??= new InventoryResource($this->client);
+    }
+
+    public function stockAdjustments(): StockAdjustmentResource
+    {
+        return $this->stockAdjustments ??= new StockAdjustmentResource($this->client);
     }
 
     public function vendors(): VendorResource
