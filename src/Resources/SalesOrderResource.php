@@ -38,16 +38,24 @@ class SalesOrderResource
      */
     public function create(array $payload): array
     {
-        return $this->client->post('/sales-orders', $payload);
+        if (empty($payload['salesOrderId'])) {
+            $payload['salesOrderId'] = Client::uuid4();
+        }
+
+        return $this->client->put('/sales-orders', $payload);
     }
 
     /**
+     * inFlow upserts via PUT /sales-orders with the id in the body.
+     *
      * @param array<string, mixed> $payload
      * @return array<string, mixed>
      */
     public function update(string $id, array $payload): array
     {
-        return $this->client->put('/sales-orders/' . rawurlencode($id), $payload);
+        $payload['salesOrderId'] = $id;
+
+        return $this->client->put('/sales-orders', $payload);
     }
 
     /**

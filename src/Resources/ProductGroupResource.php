@@ -6,7 +6,12 @@ namespace Abhimanev\Inflow\Resources;
 
 use Abhimanev\Inflow\Client;
 
-class ProductResource
+/**
+ * inFlow product groups (parent + variant matrix).
+ *
+ * @see https://cloudapi.inflowinventory.com/docs/api/swagger.json — ProductGroup
+ */
+class ProductGroupResource
 {
     private Client $client;
 
@@ -21,49 +26,40 @@ class ProductResource
      */
     public function list(array $query = []): array
     {
-        return $this->client->get('/products', $query);
+        return $this->client->get('/product-groups', $query);
     }
 
     /**
      * @return array<string, mixed>
      */
-    public function find(string $id): array
+    public function find(string $id, array $query = []): array
     {
-        return $this->client->get('/products/' . rawurlencode($id));
+        return $this->client->get('/product-groups/' . rawurlencode($id), $query);
     }
 
     /**
+     * Upsert via PUT /product-groups (id in the body).
+     *
      * @param array<string, mixed> $payload
      * @return array<string, mixed>
      */
     public function create(array $payload): array
     {
-        if (empty($payload['productId'])) {
-            $payload['productId'] = Client::uuid4();
+        if (empty($payload['productGroupId'])) {
+            $payload['productGroupId'] = Client::uuid4();
         }
 
-        return $this->client->put('/products', $payload);
+        return $this->client->put('/product-groups', $payload);
     }
 
     /**
-     * inFlow upserts via PUT /products with the id in the body — there is no
-     * POST and no PUT /products/{id}.
-     *
      * @param array<string, mixed> $payload
      * @return array<string, mixed>
      */
     public function update(string $id, array $payload): array
     {
-        $payload['productId'] = $id;
+        $payload['productGroupId'] = $id;
 
-        return $this->client->put('/products', $payload);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function delete(string $id): array
-    {
-        return $this->client->delete('/products/' . rawurlencode($id));
+        return $this->client->put('/product-groups', $payload);
     }
 }

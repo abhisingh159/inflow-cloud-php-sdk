@@ -6,6 +6,7 @@ namespace Abhimanev\Inflow;
 
 use Abhimanev\Inflow\Resources\CustomerResource;
 use Abhimanev\Inflow\Resources\InventoryResource;
+use Abhimanev\Inflow\Resources\ProductGroupResource;
 use Abhimanev\Inflow\Resources\ProductResource;
 use Abhimanev\Inflow\Resources\SalesOrderResource;
 use Abhimanev\Inflow\Resources\StockAdjustmentResource;
@@ -17,6 +18,7 @@ class Inflow
     private Client $client;
 
     private ?ProductResource $products = null;
+    private ?ProductGroupResource $productGroups = null;
     private ?CustomerResource $customers = null;
     private ?SalesOrderResource $salesOrders = null;
     private ?InventoryResource $inventory = null;
@@ -42,6 +44,11 @@ class Inflow
     public function products(): ProductResource
     {
         return $this->products ??= new ProductResource($this->client);
+    }
+
+    public function productGroups(): ProductGroupResource
+    {
+        return $this->productGroups ??= new ProductGroupResource($this->client);
     }
 
     public function customers(): CustomerResource

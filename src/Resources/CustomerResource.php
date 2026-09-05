@@ -38,16 +38,24 @@ class CustomerResource
      */
     public function create(array $payload): array
     {
-        return $this->client->post('/customers', $payload);
+        if (empty($payload['customerId'])) {
+            $payload['customerId'] = Client::uuid4();
+        }
+
+        return $this->client->put('/customers', $payload);
     }
 
     /**
+     * inFlow upserts via PUT /customers with the id in the body.
+     *
      * @param array<string, mixed> $payload
      * @return array<string, mixed>
      */
     public function update(string $id, array $payload): array
     {
-        return $this->client->put('/customers/' . rawurlencode($id), $payload);
+        $payload['customerId'] = $id;
+
+        return $this->client->put('/customers', $payload);
     }
 
     /**

@@ -22,6 +22,9 @@ class Client
      */
     public const API_VERSION = '2026-02-24';
 
+    /** Max attempts for a throttled (429/503) request before giving up. */
+    private const MAX_ATTEMPTS = 5;
+
     private Config $config;
     private ClientInterface $http;
 
@@ -38,6 +41,19 @@ class Client
     public function getConfig(): Config
     {
         return $this->config;
+    }
+
+    /**
+     * Generate a v4 UUID. inFlow upserts require the entity id in the body and
+     * expect a client-generated GUID on insert.
+     */
+    public static function uuid4(): string
+    {
+        $data = random_bytes(16);
+        $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
+        $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
+
+        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
     }
 
     /**
@@ -107,11 +123,26 @@ class Client
             unset($options['query']);
         }
 
-        try {
-            $response = $this->http->request($method, $this->normalizePath($path), $options);
-        } catch (RequestException $e) {
-            $response = $e->getResponse();
-            if ($response === null) {
+        $url = $this->normalizePath($path);
+
+        // inFlow rate-limits; over a large sync (1k+ records) requests will get
+        // 429s. Transparently back off and retry (honouring Retry-After) so a
+        // single throttle doesn't fail the whole sync job.
+        for ($attempt = 1; ; $attempt++) {
+            try {
+                $response = $this->http->request($method, $url, $options);
+            } catch (RequestException $e) {
+                $response = $e->getResponse();
+                if ($response === null) {
+                    throw new ApiException(
+                        sprintf('HTTP request failed: %s', $e->getMessage()),
+                        0,
+                        '',
+                        null,
+                        $e
+                    );
+                }
+            } catch (GuzzleException | Throwable $e) {
                 throw new ApiException(
                     sprintf('HTTP request failed: %s', $e->getMessage()),
                     0,
@@ -120,18 +151,27 @@ class Client
                     $e
                 );
             }
-            return $this->handleResponse($response);
-        } catch (GuzzleException | Throwable $e) {
-            throw new ApiException(
-                sprintf('HTTP request failed: %s', $e->getMessage()),
-                0,
-                '',
-                null,
-                $e
-            );
-        }
 
-        return $this->handleResponse($response);
+            $status = $response->getStatusCode();
+            if (in_array($status, [429, 503], true) && $attempt < self::MAX_ATTEMPTS) {
+                $this->backoff($response, $attempt);
+                continue;
+            }
+
+            return $this->handleResponse($response);
+        }
+    }
+
+    /** Sleep before retrying a throttled request: Retry-After if given, else exponential. */
+    private function backoff(ResponseInterface $response, int $attempt): void
+    {
+        $retryAfter = $response->getHeaderLine('Retry-After');
+        $seconds = is_numeric($retryAfter) && $retryAfter !== ''
+            ? (float) $retryAfter
+            : 0.5 * (2 ** ($attempt - 1));
+        $seconds = min($seconds, 10.0); // hard cap so a job never stalls on one call
+
+        usleep((int) ($seconds * 1_000_000));
     }
 
     /**

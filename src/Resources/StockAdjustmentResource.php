@@ -56,16 +56,24 @@ class StockAdjustmentResource
      */
     public function create(array $payload): array
     {
-        return $this->client->post('/stock-adjustments', $payload);
+        if (empty($payload['stockAdjustmentId'])) {
+            $payload['stockAdjustmentId'] = Client::uuid4();
+        }
+
+        return $this->client->put('/stock-adjustments', $payload);
     }
 
     /**
+     * inFlow upserts via PUT /stock-adjustments with the id in the body.
+     *
      * @param array<string, mixed> $payload
      * @return array<string, mixed>
      */
     public function update(string $id, array $payload): array
     {
-        return $this->client->put('/stock-adjustments/' . rawurlencode($id), $payload);
+        $payload['stockAdjustmentId'] = $id;
+
+        return $this->client->put('/stock-adjustments', $payload);
     }
 
     /**

@@ -149,13 +149,21 @@ $inflow = new Inflow($config, new Client($config, $http));
 
 | Method | Resource | Endpoints |
 |---|---|---|
-| `products()`     | `ProductResource`    | `/products`, `/products/{id}` |
-| `customers()`    | `CustomerResource`   | `/customers`, `/customers/{id}` |
-| `salesOrders()`  | `SalesOrderResource` | `/sales-orders`, `/sales-orders/{id}` |
-| `inventory()`    | `InventoryResource`  | `/products/summary`, `/products/{id}/summary` (read-only — see note below) |
-| `vendors()`      | `VendorResource`     | `/vendors`, `/vendors/{id}` |
+| `products()`      | `ProductResource`      | `/products`, `/products/{id}` |
+| `productGroups()` | `ProductGroupResource` | `/product-groups`, `/product-groups/{id}` |
+| `customers()`     | `CustomerResource`     | `/customers`, `/customers/{id}` |
+| `salesOrders()`   | `SalesOrderResource`   | `/sales-orders`, `/sales-orders/{id}` |
+| `inventory()`     | `InventoryResource`    | `/products/summary`, `/products/{id}/summary` (read-only — see note below) |
+| `vendors()`       | `VendorResource`       | `/vendors`, `/vendors/{id}` |
 
-Each resource exposes `list()`, `find()`, `create()`, `update()`, `delete()` — **except `inventory()`**, which is read-only. inFlow has no direct "set stock" endpoint; stock changes go through stock-adjustments / stock-counts / stock-transfers (planned for a future SDK release). Calling `inventory()->create/update/delete()` throws `BadMethodCallException` with an actionable message.
+```php
+// Variable products (parent + variants)
+$groups = $inflow->productGroups()->list([
+    'include' => 'productVariants,productVariants.product,options,category',
+]);
+```
+
+Each resource exposes `list()`, `find()`, `create()`, `update()`, `delete()` — **except `inventory()`**, which is read-only. inFlow has no direct "set stock" endpoint; stock changes go through stock-adjustments / stock-counts / stock-transfers (planned for a future SDK release). Calling `inventory()->create/update/delete()` throws `BadMethodCallException` with an actionable message. Product groups expose `list`, `find`, `create`, and `update` (no delete in the public API).
 
 ## License
 
